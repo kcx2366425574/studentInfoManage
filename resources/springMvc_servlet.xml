@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+xmlns:mvc="http://www.springframework.org/schema/mvc"
+xmlns:context="http://www.springframework.org/schema/context"
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xsi:schemaLocation="
+http://www.springframework.org/schema/beans
+http://www.springframework.org/schema/beans/spring-beans.xsd
+http://www.springframework.org/schema/mvc
+http://www.springframework.org/schema/mvc/spring-mvc.xsd
+http://www.springframework.org/schema/context
+http://www.springframework.org/schema/context/spring-context.xsd">
+
+<bean id="myConvertService" class="org.springframework.context.support.ConversionServiceFactoryBean">
+    	<property name="converters">
+    		<list>
+    			<bean class="com.tools.StringToDateConverter">
+    				<constructor-arg name="datePanert" value="yyyy-MM-dd"> </constructor-arg>
+    			</bean>
+    		</list>
+    	</property>
+</bean>
+  
+ <!-- 控制器包扫描，使用注解开发 -->
+ <context:component-scan base-package="com.controller"></context:component-scan>
+ 
+ <!--  配置视图解析器 -->
+  <!--  前缀+控制器返回值+后缀  /WEB-INF/JSP/index.jsp -->
+ <bean   class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+     <property name="prefix" value="/WEB-INF/jsp/"></property>
+      <property name="suffix" value=".jsp"></property>
+  </bean> 
+  
+  <mvc:annotation-driven conversion-service="myConvertService">
+    	<!-- 返回json格式数据中文乱码 -->
+    	<mvc:message-converters>
+    		<bean class="org.springframework.http.converter.StringHttpMessageConverter">
+    			<property name="supportedMediaTypes">
+    				<list>
+    					<value>application/json;charset=UTF-8</value>
+    				</list>
+    			</property>
+    		</bean>
+    		<!-- 解决json数据日期格式 -->
+    		<bean class="com.alibaba.fastjson.support.spring.FastJsonHttpMessageConverter">
+    			<property name="supportedMediaTypes">
+    				<list>
+    					<value>text/html;charset=UTF-8</value>
+    					<value>application/json</value>
+    				</list>
+    			</property>
+    			<property name="features">
+    				<list>
+    					<value>WriteDateUseDateFormat</value>
+    				</list>
+    			</property>
+    		</bean> 
+    	</mvc:message-converters>
+    </mvc:annotation-driven>
+    
+   <!-- 静态资源配置 -->
+  <mvc:resources location="/statics/" mapping="/statics/**"/>
+  
+   <!-- 全局异常处理 -->
+  <bean class="org.springframework.web.servlet.handler.SimpleMappingExceptionResolver">
+     <property name="exceptionMappings">
+       <props>
+         <prop key="java.lang.RuntimeException">error</prop>
+       </props>
+     </property>
+  </bean>
+  
+
+  <!-- 配置拦截器 -->
+   <mvc:interceptors>
+    <mvc:interceptor>
+       <mvc:mapping path="/manage/**"/>              
+       <bean class="com.interseptor.SysInterseptor"></bean>
+    </mvc:interceptor>
+  </mvc:interceptors>
+  
+</beans>
+  
+  
